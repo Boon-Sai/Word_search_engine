@@ -157,7 +157,8 @@ def preprocess_documents():
                                         word.geometry[0][1],
                                         word.geometry[1][0],
                                         word.geometry[1][1]
-                                    ]
+                                    ],
+                                    "confidence": word.confidence  # Add confidence score
                                 })
                     results.extend(page_words)
                     
