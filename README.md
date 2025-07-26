@@ -1,7 +1,8 @@
 
+
 # Preprocessing Script Documentation
 
-This document provides a comprehensive guide for setting up, installing dependencies, and running the `preprocess.py` script, designed to perform Optical Character Recognition (OCR) on documents using the docTR library. The script detects bounding boxes for every word in various alignments (horizontal, vertical, and rotated) and generates structured outputs for further analysis.
+This document provides a comprehensive guide for setting up, installing dependencies, and running the `preprocess.py` script, designed to perform Optical Character Recognition (OCR) on documents using the docTR library. The script detects bounding boxes for every word in various alignments (horizontal, vertical, and rotated) and generates structured outputs for further analysis. This README was last updated on Saturday, July 26, 2025, at 12:07 PM IST.
 
 ## Overview
 
@@ -160,3 +161,4 @@ This script utilizes the docTR library, distributed under the Apache 2.0 License
 ## Contact
 For further assistance, consult the docTR documentation (https://mindee.github.io/doctr/) or raise an issue on the GitHub repository.
 
+---
