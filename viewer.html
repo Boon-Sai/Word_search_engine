@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 1px;
+        }
+
+        /* Left Section */
+        .left-section {
+            width: 25%;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-section {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .upload-btn.secondary {
+            background-color: #6c757d;
+        }
+
+        .upload-btn.secondary:hover {
+            background-color: #545b62;
+        }
+
+        .documents-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .document-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            word-break: break-word;
+        }
+
+        .document-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .document-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Middle Section */
+        .middle-section {
+            width: 50%;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewer-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f8f9fa;
+        }
+
+        .document-viewer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .page-container {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page-number {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .page-content {
+            position: relative;
+        }
+
+        .page-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .bounding-box {
+            position: absolute;
+            border: 2px solid #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .bounding-box.current {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.2);
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+
+        .no-document {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        /* Right Section */
+        .right-section {
+            width: 25%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn.primary {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .search-btn.primary:hover {
+            background-color: #218838;
+        }
+
+        .search-btn.secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .search-btn.secondary:hover {
+            background-color: #545b62;
+        }
+
+        .search-btn:disabled {
+            background-color: #e0e0e0;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .search-results {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .search-stats {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .result-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .result-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .result-item.current {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .result-document {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .result-page {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .result-item.current .result-page {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        .error-message {
+            color: #dc3545;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Section -->
+        <div class="left-section">
+            <div class="upload-section">
+                <button class="upload-btn" onclick="uploadDocuments()">Upload Documents Folder</button>
+                <button class="upload-btn secondary" onclick="uploadJSON()">Upload JSON File</button>
+                <input type="file" id="documents-input" class="hidden-input" webkitdirectory multiple>
+                <input type="file" id="json-input" class="hidden-input" accept=".json">
+            </div>
+            <div class="documents-list" id="documents-list">
+                <div style="color: #6c757d; text-align: center; padding: 20px;">
+                    Upload documents to get started
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Section -->
+        <div class="middle-section">
+            <div class="viewer-header">
+                <h3 id="document-title">No document selected</h3>
+            </div>
+            <div class="document-viewer" id="document-viewer">
+                <div class="no-document">
+                    Select a document from the left panel to view
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <div class="search-section">
+                <input type="text" id="search-input" class="search-input" placeholder="Enter search term..." onkeypress="handleSearchKeyPress(event)">
+                <div class="search-buttons">
+                    <button class="search-btn primary" onclick="searchWord()">Search</button>
+                    <button class="search-btn secondary" id="prev-btn" onclick="navigateResult(-1)" disabled>Previous</button>
+                    <button class="search-btn secondary" id="next-btn" onclick="navigateResult(1)" disabled>Next</button>
+                </div>
+            </div>
+            <div class="search-results" id="search-results">
+                <div style="color: #6c757d; text-align: center; padding: 20px;">
+                    Search results will appear here
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let documentsData = {};
+        let jsonData = [];
+        let currentSearchResults = [];
+        let currentResultIndex = -1;
+        let currentDocument = null;
+
+        // Upload Functions
+        function uploadDocuments() {
+            document.getElementById('documents-input').click();
+        }
+
+        function uploadJSON() {
+            document.getElementById('json-input').click();
+        }
+
+        // File Upload Handlers
+        document.getElementById('documents-input').addEventListener('change', handleDocumentsUpload);
+        document.getElementById('json-input').addEventListener('change', handleJSONUpload);
+
+        function handleDocumentsUpload(event) {
+            const files = event.target.files;
+            const documentsList = document.getElementById('documents-list');
+            
+            documentsData = {};
+            documentsList.innerHTML = '';
+
+            for (let file of files) {
+                const fileName = file.name;
+                const fileExtension = fileName.split('.').pop().toLowerCase();
+                
+                if (['pdf', 'jpg', 'jpeg', 'png', 'docx'].includes(fileExtension)) {
+                    documentsData[fileName] = file;
+                    
+                    const documentItem = document.createElement('div');
+                    documentItem.className = 'document-item';
+                    documentItem.textContent = fileName;
+                    documentItem.onclick = () => selectDocument(fileName);
+                    documentsList.appendChild(documentItem);
+                }
+            }
+        }
+
+        // Add a helper function to check if logs folder structure exists
+        function checkLogsStructure() {
+            const resultsContainer = document.getElementById('search-results');
+            if (jsonData.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="error-message">
+                        <strong>Setup Required:</strong><br>
+                        1. Run your preprocessing script first<br>
+                        2. Upload the generated JSON file<br>
+                        3. Ensure the UI is served from the same directory as the logs folder
+                    </div>
+                `;
+            }
+        }
+
+        // Update the JSON upload handler to check structure
+        function handleJSONUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        jsonData = JSON.parse(e.target.result);
+                        console.log('JSON data loaded:', jsonData.length, 'records');
+                        
+                        // Show helpful message
+                        const resultsContainer = document.getElementById('search-results');
+                        resultsContainer.innerHTML = `
+                            <div style="color: #28a745; text-align: center; padding: 20px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px;">
+                                ✅ JSON data loaded successfully<br>
+                                <small>${jsonData.length} word records found</small>
+                            </div>
+                        `;
+                    } catch (error) {
+                        const resultsContainer = document.getElementById('search-results');
+                        resultsContainer.innerHTML = `
+                            <div class="error-message">
+                                Error parsing JSON file: ${error.message}
+                            </div>
+                        `;
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Document Selection
+        function selectDocument(fileName) {
+            // Update active document in left panel
+            const documentItems = document.querySelectorAll('.document-item');
+            documentItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.textContent === fileName) {
+                    item.classList.add('active');
+                }
+            });
+
+            currentDocument = fileName;
+            document.getElementById('document-title').textContent = fileName;
+            
+            // Load document in viewer
+            loadDocumentViewer(fileName);
+        }
+
+        // Fixed function to convert filename to directory name
+        function convertFilenameToDirectoryName(fileName) {
+            // This should match exactly what your preprocessing script does
+            // Based on your error, it seems like it:
+            // 1. Replaces all dots with underscores
+            // 2. Replaces spaces with underscores  
+            // 3. Replaces parentheses with underscores
+            // 4. Keeps the original case but converts extension to lowercase
+            
+            const lastDotIndex = fileName.lastIndexOf('.');
+            let nameWithoutExt = fileName;
+            let extension = '';
+            
+            if (lastDotIndex !== -1) {
+                nameWithoutExt = fileName.substring(0, lastDotIndex);
+                extension = fileName.substring(lastDotIndex + 1).toLowerCase();
+            }
+            
+            // Replace dots, spaces, and parentheses with underscores
+            const cleanedName = nameWithoutExt
+                .replace(/\./g, '_')
+                .replace(/\s+/g, '_')
+                .replace(/[()]/g, '_');
+            
+            return extension ? `${cleanedName}_${extension}` : cleanedName;
+        }
+
+        // Handle DOCX files similarly to PDF
+        function loadDocumentViewer(fileName) {
+            const viewer = document.getElementById('document-viewer');
+            const file = documentsData[fileName];
+            
+            if (!file) {
+                viewer.innerHTML = '<div class="no-document">Document not found</div>';
+                return;
+            }
+
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+            
+            if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                loadImageDocument(file, fileName, viewer);
+            } else if (['pdf', 'docx'].includes(fileExtension)) {
+                loadConvertedDocument(file, fileName, viewer);
+            } else {
+                viewer.innerHTML = '<div class="no-document">Document format not supported for viewing</div>';
+            }
+        }
+
+        function loadConvertedDocument(file, fileName, viewer) {
+            // For PDF and DOCX files, load the converted images from logs folder
+            const documentName = convertFilenameToDirectoryName(fileName);
+            const pagesInDocument = jsonData.filter(item => item.document === fileName);
+            const totalPages = Math.max(...pagesInDocument.map(item => item.page), 0) || 1; // Default to 1 if no pages
+            
+            if (totalPages === 0) {
+                viewer.innerHTML = `
+                    <div class="no-document">
+                        <div style="text-align: center; color: #6c757d;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">📄</div>
+                            <div style="font-size: 18px; margin-bottom: 10px;">No page data found</div>
+                            <div style="font-size: 14px;">
+                                Please ensure this document has been preprocessed<br>
+                                and the JSON data is loaded.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let pagesHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                // const imagePath = `logs/${documentName}_pdf/annotated_${documentName}_pdf_page_${i}.jpg`;
+                const imagePath = `../logs/doc/page_${i}.jpg`;
+                pagesHTML += `
+                    <div class="page-container" id="page-${i}">
+                        <div class="page-number">Page ${i}</div>
+                        <div class="page-content" style="position: relative;">
+                            <img src="${imagePath}" 
+                                 alt="${fileName} - Page ${i}" 
+                                 class="page-image" 
+                                 onload="imageLoaded(this, '${fileName}', ${i})"
+                                 onerror="handleImageError(this, '${imagePath}', '${fileName}', ${i})">
+                        </div>
+                    </div>
+                `;
+            }
+            
+            viewer.innerHTML = pagesHTML;
+        }
+
+        function loadImageDocument(file, fileName, viewer) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                viewer.innerHTML = `
+                    <div class="page-container" id="page-1">
+                        <div class="page-number">Page 1</div>
+                        <div class="page-content" style="position: relative;">
+                            <img src="${e.target.result}" alt="${fileName}" class="page-image" onload="imageLoaded(this, '${fileName}', 1)">
+                        </div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function imageLoaded(img, fileName, pageNum) {
+            // Image is loaded, we can now position bounding boxes if there are search results
+            if (currentSearchResults.length > 0) {
+                updateBoundingBoxes();
+            }
+        }
+
+        function handleImageError(img, imagePath, fileName, pageNum) {
+            // If the converted image doesn't exist, show an error message
+            img.style.display = 'none';
+            const pageContent = img.parentElement;
+            
+            if (!pageContent.querySelector('.image-error')) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'image-error';
+                errorDiv.style.cssText = `
+                    padding: 40px;
+                    text-align: center;
+                    color: #6c757d;
+                    background-color: #f8f9fa;
+                    border: 2px dashed #e0e0e0;
+                    margin: 20px;
+                `;
+                errorDiv.innerHTML = `
+                    <div style="font-size: 18px; margin-bottom: 10px;">📄</div>
+                    <div>Page ${pageNum} image not found</div>
+                    <div style="font-size: 12px; margin-top: 5px;">
+                        Expected: ${imagePath}<br>
+                        Please run preprocess.py for ${fileName} or check the logs folder.
+                    </div>
+                `;
+                pageContent.appendChild(errorDiv);
+            }
+        }
+
+        // Search Functions
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                searchWord();
+            }
+        }
+
+        function searchWord() {
+            const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!searchTerm || jsonData.length === 0) {
+                alert('Please enter a search term and ensure JSON data is loaded');
+                return;
+            }
+
+            // Search in JSON data
+            currentSearchResults = jsonData.filter(item => 
+                item.word && item.word.toLowerCase().includes(searchTerm)
+            );
+
+            displaySearchResults();
+            
+            if (currentSearchResults.length > 0) {
+                currentResultIndex = 0;
+                navigateToResult(0);
+            }
+        }
+
+        function displaySearchResults() {
+            const resultsContainer = document.getElementById('search-results');
+            
+            if (currentSearchResults.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="search-stats">No results found</div>
+                `;
+                document.getElementById('prev-btn').disabled = true;
+                document.getElementById('next-btn').disabled = true;
+                return;
+            }
+
+            let resultsHTML = `
+                <div class="search-stats">
+                    Found ${currentSearchResults.length} results
+                </div>
+            `;
+
+            currentSearchResults.forEach((result, index) => {
+                resultsHTML += `
+                    <div class="result-item" onclick="navigateToResult(${index})" id="result-${index}">
+                        <div class="result-document">${result.document}</div>
+                        <div class="result-page">Page ${result.page}</div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = resultsHTML;
+            
+            // Enable navigation buttons
+            document.getElementById('prev-btn').disabled = false;
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function navigateResult(direction) {
+            if (currentSearchResults.length === 0) return;
+            
+            currentResultIndex += direction;
+            
+            if (currentResultIndex < 0) {
+                currentResultIndex = currentSearchResults.length - 1;
+            } else if (currentResultIndex >= currentSearchResults.length) {
+                currentResultIndex = 0;
+            }
+            
+            navigateToResult(currentResultIndex);
+        }
+
+        function navigateToResult(index) {
+            if (index < 0 || index >= currentSearchResults.length) return;
+            
+            currentResultIndex = index;
+            const result = currentSearchResults[index];
+            
+            // Update result highlighting
+            const resultItems = document.querySelectorAll('.result-item');
+            resultItems.forEach((item, i) => {
+                item.classList.toggle('current', i === index);
+            });
+            
+            // Select the document if it's not already selected
+            if (currentDocument !== result.document) {
+                selectDocument(result.document);
+            }
+            
+            // Wait a bit for document to load, then scroll to result
+            setTimeout(() => {
+                scrollToResult(result);
+                updateBoundingBoxes();
+            }, 500);
+        }
+
+        function scrollToResult(result) {
+            const pageElement = document.getElementById(`page-${result.page}`);
+            if (pageElement) {
+                pageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function updateBoundingBoxes() {
+            // Remove existing bounding boxes
+            const existingBoxes = document.querySelectorAll('.bounding-box');
+            existingBoxes.forEach(box => box.remove());
+            
+            if (!currentDocument || currentSearchResults.length === 0) return;
+            
+            // Add bounding boxes for current document
+            const documentResults = currentSearchResults.filter(result => result.document === currentDocument);
+            
+            documentResults.forEach((result, index) => {
+                const pageElement = document.getElementById(`page-${result.page}`);
+                if (pageElement) {
+                    const pageContent = pageElement.querySelector('.page-content');
+                    const img = pageContent.querySelector('.page-image');
+                    
+                    if (img && img.complete && img.naturalWidth > 0) {
+                        const bbox = result.bounding_box;
+                        const imgRect = img.getBoundingClientRect();
+                        const pageRect = pageContent.getBoundingClientRect();
+                        
+                        const box = document.createElement('div');
+                        box.className = 'bounding-box';
+                        
+                        // Check if this is the current result
+                        const isCurrentResult = currentSearchResults[currentResultIndex] === result;
+                        if (isCurrentResult) {
+                            box.classList.add('current');
+                        }
+                        
+                        // Calculate position relative to the displayed image size
+                        const [x1, y1, x2, y2] = bbox; // Normalized coordinates [0-1]
+                        const imgWidth = imgRect.width; // Displayed width
+                        const imgHeight = imgRect.height; // Displayed height
+                        
+                        // Convert normalized coordinates to pixel coordinates
+                        const left = x1 * imgWidth;
+                        const top = y1 * imgHeight;
+                        const width = (x2 - x1) * imgWidth;
+                        const height = (y2 - y1) * imgHeight;
+                        
+                        // Adjust for image offset within page content
+                        const offsetX = imgRect.left - pageRect.left;
+                        const offsetY = imgRect.top - pageRect.top;
+                        
+                        box.style.left = `${left + offsetX}px`;
+                        box.style.top = `${top + offsetY}px`;
+                        box.style.width = `${width}px`;
+                        box.style.height = `${height}px`;
+                        
+                        pageContent.appendChild(box);
+                    }
+                }
+            });
+        }
+
+        // Handle window resize to update bounding boxes
+        window.addEventListener('resize', () => {
+            if (currentSearchResults.length > 0) {
+                setTimeout(updateBoundingBoxes, 100);
+            }
+        });
+    </script>
+</body>
+</html>

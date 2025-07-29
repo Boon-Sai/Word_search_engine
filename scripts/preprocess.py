@@ -46,7 +46,7 @@ def convert_page_to_image(pdf_path, page_num, output_dir, doc_name):
     os.makedirs(output_dir, exist_ok=True)
     try:
         images = convert_from_path(pdf_path, first_page=page_num, last_page=page_num)
-        image_path = os.path.join(output_dir, f"{doc_name}_page_{page_num}.jpg")
+        image_path = os.path.join(output_dir, f"page_{page_num}.jpg")
         images[0].save(image_path, "JPEG")
         logging.info(f"Converted page {page_num} of {pdf_path} to {image_path}")
         return image_path
@@ -126,7 +126,7 @@ def preprocess_documents():
         # Process each file with tqdm progress bar
         for file_path in tqdm(all_files, desc="Processing documents"):
             doc_name = os.path.basename(file_path).replace(".", "_")  # Replace dots for folder names
-            image_dir = os.path.join(logs_dir, f"{doc_name}")
+            image_dir = os.path.join(logs_dir, "doc")
             os.makedirs(image_dir, exist_ok=True)
             logging.info(f"Processing file: {file_path}")
             

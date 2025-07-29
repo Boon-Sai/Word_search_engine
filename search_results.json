@@ -1,0 +1,26 @@
+[
+  {
+    "document": "4.Mktng own and Marketer PC (1).pdf",
+    "page": 2,
+    "word": "Ethion",
+    "bounding_box": [
+      0.36462684761938735,
+      0.5437487959861755,
+      0.42025475915352906,
+      0.559766948223114
+    ],
+    "confidence": 0.9998408555984497
+  },
+  {
+    "document": "4.Mktng own and Marketer PC (1).pdf",
+    "page": 12,
+    "word": "Ethion",
+    "bounding_box": [
+      0.10961479460052137,
+      0.21460555493831635,
+      0.14672739257906925,
+      0.22583602368831635
+    ],
+    "confidence": 0.9984877109527588
+  }
+]
